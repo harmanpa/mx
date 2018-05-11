@@ -3922,6 +3922,10 @@ class NativeBuildTask(ProjectBuildTask):
             env.update(self.subject.getBuildEnv())
         if self.parallelism > 1:
             cmdline += ['-j', str(self.parallelism)]
+        for key in env:
+            env[key] = env[key].replace("\\", "/")
+        cmdline[:] = [cmd.replace("\\", "/") for cmd in cmdline]
+        cwd = cwd.replace("\\", "/")
         return cmdline, cwd, env
 
     def build(self):
@@ -11310,6 +11314,16 @@ def gmake_cmd():
         except:
             pass
     abort('Could not find a GNU make executable on the current path.')
+
+def tar_cmd():
+    for a in ['tar', 'bsdtar']:
+        try:
+            output = subprocess.check_output([a, '--version'])
+            if 'GNU' in output:
+                return a
+        except:
+            pass
+    abort('Could not find a tar executable on the current path.')
 
 def expandvars_in_property(value):
     result = expandvars(value)
